@@ -63,9 +63,9 @@ def control():
             pitch = euler[1]
             yaw = euler[2]
             if yaw < 0 :
-                yaw_offset = 1500 + (-math.sqrt(abs(yaw)) * 80)
+                yaw_offset = 1500 + (-math.sqrt(abs(yaw)) * 90)
             else:
-                yaw_offset = 1500 + (math.sqrt(abs(yaw)) * 80)
+                yaw_offset = 1500 + (math.sqrt(abs(yaw)) * 90)
             if n_print > 5:
                 rospy.loginfo("Roll: %s, Pitch: %s, Yaw: %s", roll, pitch, yaw)  
                 rospy.loginfo("x=%f, y=%f, z=%f", x, y-1, z)
@@ -84,7 +84,7 @@ def control():
                 rospy.loginfo("Landing . . .")
                 z_offset = 1400
                 flag_landing = 1
-                if z < 7.5:
+                if z < 7.7:
                     set_drone_mode('QLAND')
                     rospy.sleep(10)
                     break
