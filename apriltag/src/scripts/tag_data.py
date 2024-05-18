@@ -6,6 +6,8 @@ from geometry_msgs.msg import PoseStamped
 from mavros_msgs.msg import OverrideRCIn
 from mavros_msgs.srv import SetMode
 import math
+import time
+start_time = None
 
 aruco_position = PoseStamped() 
 aruco_detected = False
@@ -36,6 +38,7 @@ def detection_callback(data):
 def control():
     global aruco_position
     global aruco_detected
+    global start_time
     rospy.init_node('apriltag_detector_node', anonymous=True)
     rospy.Subscriber("/minihawk_SIM/MH_usb_camera_link_optical/tag_detections", AprilTagDetectionArray, detection_callback)
     rospy.sleep(1)
@@ -63,14 +66,9 @@ def control():
             pitch = euler[1]
             yaw = euler[2]
             if yaw < 0 :
-                yaw_offset = 1500 + (-math.sqrt(abs(yaw)) * 90)
+                yaw_offset = 1500 + (-math.sqrt(abs(yaw)) * 100)
             else:
-                yaw_offset = 1500 + (math.sqrt(abs(yaw)) * 90)
-            if n_print > 5:
-                rospy.loginfo("Roll: %s, Pitch: %s, Yaw: %s", roll, pitch, yaw)  
-                rospy.loginfo("x=%f, y=%f, z=%f", x, y-1, z)
-                n_print = 0
-            n_print += 1
+                yaw_offset = 1500 + (math.sqrt(abs(yaw)) * 100)
             if x < 0 :
                 x_offset = 1500 + (-math.sqrt(abs(x)) * 50)
             else:
@@ -84,12 +82,25 @@ def control():
                 rospy.loginfo("Landing . . .")
                 z_offset = 1400
                 flag_landing = 1
-                if z < 7.7:
-                    set_drone_mode('QLAND')
-                    rospy.sleep(10)
-                    break
+                if z < 7.5 and not start_time:
+                    start_time = rospy.Time.now()
+                    rospy.loginfo("Preparing to land...")
+                if start_time:
+                    elapsed_time = rospy.Time.now() - start_time
+                    if elapsed_time.to_sec() < 20:
+                        z_offset = 1400
+                    else:
+                        set_drone_mode('QLAND')
+                        rospy.loginfo("Switching to QLAND mode...")
+                        rospy.sleep(10)
+                        break
             else :
                 z_offset = 1500
+                if n_print > 5:
+                    rospy.loginfo("Roll: %s, Pitch: %s, Yaw: %s", roll, pitch, yaw)  
+                    rospy.loginfo("x=%f, y=%f, z=%f", x, y-1, z)
+                    n_print = 0
+                n_print += 1
         rc_msg = OverrideRCIn()
         rc_msg.channels =  [x_offset, y_offset, z_offset, yaw_offset, 1800, 1000, 1000, 1800, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         rc_pub.publish(rc_msg)
