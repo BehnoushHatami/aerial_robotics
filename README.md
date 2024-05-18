@@ -1,6 +1,6 @@
 # aerial_robotics
 
-## The video of the final touch-down is available [here](https://drive.google.com/file/d/1LXAbegC2nd6NB_vxKncFrrH6DARXRs35/view?usp=drive_lin).
+# A video of the final touch-down is available [here](https://drive.google.com/file/d/1LXAbegC2nd6NB_vxKncFrrH6DARXRs35/view?usp=drive_lin).
 
 
 ## Install requirements
